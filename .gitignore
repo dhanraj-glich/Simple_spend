@@ -1,0 +1,11 @@
+# Packages are installed from package.json and should not be uploaded.
+node_modules/
+
+# Build output and local environment secrets.
+dist/
+.env.local
+
+# Editor and operating-system files.
+.vscode/
+.DS_Store
+Thumbs.db

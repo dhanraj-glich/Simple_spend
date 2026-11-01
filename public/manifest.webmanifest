@@ -1,0 +1,4 @@
+{
+  "name": "Simple Spend", "short_name": "Simple Spend", "start_url": "/", "display": "standalone",
+  "background_color": "#fbf3e8", "theme_color": "#741c31", "icons": []
+}
