@@ -1,4 +1,5 @@
 import "./styles.css";
+import { createClient } from "@supabase/supabase-js";
 
 const EXPENSE = [
   "Food",
@@ -79,8 +80,6 @@ async function setupSupabase() {
     key = import.meta.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) return;
   try {
-    const { createClient } =
-      await import("https://esm.sh/@supabase/supabase-js@2");
     state.supabase = createClient(url, key);
     const { data } = await state.supabase.auth.getSession();
     state.user = data.session?.user || null;
@@ -97,6 +96,7 @@ async function setupSupabase() {
     });
     if (state.user) await migrateAndPull();
   } catch {
+    state.supabase = null;
     toast("Cloud sync is unavailable; your device data is safe.");
   }
 }
@@ -313,16 +313,20 @@ async function doAuth(e) {
     mode = e.submitter.value,
     email = fd.get("email"),
     password = fd.get("password");
-  const r =
-    mode === "login"
-      ? await state.supabase.auth.signInWithPassword({ email, password })
-      : await state.supabase.auth.signUp({ email, password });
-  if (r.error) return toast(r.error.message);
-  if (mode === "signup" && !r.data.session)
-    return toast("Check your email to confirm your account.");
-  state.auth = false;
-  toast("Signed in successfully.");
-  render();
+  try {
+    const r =
+      mode === "login"
+        ? await state.supabase.auth.signInWithPassword({ email, password })
+        : await state.supabase.auth.signUp({ email, password });
+    if (r.error) return toast(r.error.message);
+    if (mode === "signup" && !r.data.session)
+      return toast("Check your email to confirm your account.");
+    state.auth = false;
+    toast("Signed in successfully.");
+    render();
+  } catch {
+    toast("Could not reach Supabase. Check the live app URL and public key in Vercel.");
+  }
 }
 async function cloudTransaction(t, op) {
   if (!state.user || !state.supabase) {
