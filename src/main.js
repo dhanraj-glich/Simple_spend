@@ -438,8 +438,10 @@ async function migrateAndPull() {
     toast(
       upload.length ? "Your device entries were synced." : "Account synced.",
     );
-  } catch {
-    toast("Could not sync right now; local changes are safe.");
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "Unknown database error";
+    console.error("Simple Spend sync error:", error);
+    toast(`Cloud sync needs attention: ${detail}`);
   } finally {
     state.syncing = false;
     render();
